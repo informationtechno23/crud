@@ -13,45 +13,29 @@ export interface User {
 
 const ListUser = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const LIMIT = 25;
   const [showSpinner, setShowSpinner] = useState(true);
   const [message, setMessage] = useState<string>();
   const [success, setSuccess] = useState(false);
   const [disabledButton, setDisabledButtons] = useState(false)
   
-  let skip = 0;
   const getUsers = () => {
     setLoading(true);
-    axios.get('/?limit=' + LIMIT + '&skip=' + skip)
+    axios.get('/')
       .then(res => {
         if (res.status === 200) {
-          appendUsers(res.data);
-          skip += LIMIT;
+          setUsers(res.data);
         } else {
           setShowSpinner(false);
         }
       }).catch(err => {
         console.log(err);
       }).finally(() => {
+        setShowSpinner(false);
       })
   }
   
-  const appendUsers = (users: User[]) => {
-    setUsers(users);
-  } 
-  
-  console.log(users)
   useEffect(() => {
     getUsers();
-    if (showSpinner) {
-      window.addEventListener('scroll', () => {
-          if ((window.innerHeight + document.documentElement.scrollTop) >= (document.documentElement.offsetHeight)) {
-              setTimeout(() => {
-                getUsers();
-              }, 200);
-          }
-        })
-    }
   }, []);
   
   const deleteUser = (id: string) => {
@@ -61,7 +45,7 @@ const ListUser = () => {
         const data = JSON.parse(JSON.stringify(res.data));
         setMessage(data.message);
         setSuccess(res.status === 202);
-        // getUsers();
+        getUsers();
       }).catch(err => {
         console.log(err);
       }).finally(() => {
